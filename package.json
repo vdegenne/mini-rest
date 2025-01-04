@@ -1,0 +1,39 @@
+{
+	"name": "@vdegenne/mini-rest",
+	"version": "0.0.1",
+	"description": "mini rest module",
+	"type": "module",
+	"main": "./lib/index.js",
+	"module": "./lib/index.js",
+	"exports": {
+		".": {
+			"default": "./lib/index.js",
+			"types": "./lib/index.d.ts"
+		}
+	},
+	"types": "./lib/index.d.ts",
+	"scripts": {
+		"build": "wireit"
+	},
+	"wireit": {
+		"build": {
+			"command": "tsc --pretty",
+			"clean": "if-file-deleted",
+			"files": [
+				"./tsconfig.json",
+				"./src/"
+			],
+			"output": [
+				"./lib/"
+			]
+		}
+	},
+	"files": [
+		"./lib"
+	],
+	"devDependencies": {
+		"typescript": "^5.7.2",
+		"wireit": "^0.14.9"
+	}
+}
+
