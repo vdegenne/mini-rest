@@ -31,11 +31,16 @@ export class Rest {
 		);
 	}
 
+	get url() {
+		// TODO: better url system?
+		return this.baseURL;
+	}
+
 	get(path = '/') {
-		return get(`${this.baseURL}/${path}`, this.#options.precache);
+		return get(`${this.url}/${path}`, this.#options.precache);
 	}
 	post(path = '/', body: any) {
-		return post(`${this.baseURL}/${path}`, body, this.#options.precache);
+		return post(`${this.url}/${path}`, body, this.#options.precache);
 	}
 }
 
@@ -43,9 +48,9 @@ export async function get(
 	url: string,
 	precache = false,
 ): Promise<ResponseObject> {
-	if (!url.startsWith('http')) {
-		url = `http://${url}`;
-	}
+	// if (!url.startsWith('http')) {
+	// 	url = `http://${url}`;
+	// }
 	const response = await fetch(url, {
 		method: 'GET',
 	});
@@ -70,9 +75,9 @@ export async function post(
 	body: any,
 	precache = false,
 ): Promise<ResponseObject> {
-	if (!url.startsWith('http')) {
-		url = `http://${url}`;
-	}
+	// if (!url.startsWith('http')) {
+	// 	url = `http://${url}`;
+	// }
 	const response = await fetch(url, {
 		method: 'POST',
 		headers: {
