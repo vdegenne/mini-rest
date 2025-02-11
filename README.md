@@ -19,8 +19,15 @@ if (status === 200) {
 ### Precache
 
 ```js
-const api = new Rest('localhost:xxxx/api/v1', {precache: true});
+const api = new Rest('localhost:xxxx/api/v1', {precache: 'json'});
 
 const {json} = await api.get('data');
 console.log(json.something);
+
+// You can always avoid caching 'json' if the response type does not match
+const {text} = await api.get('roman', 'text');
+console.log(text);
+
+// or
+await api.get('just-a-signal', undefined); // to avoid caching anything if precache was set
 ```
