@@ -22,12 +22,12 @@ export class Rest {
 
 	constructor(
 		protected baseURL: string,
-		options: Partial<RestOptions>,
+		options?: Partial<RestOptions>,
 	) {
 		this.#options = Object.assign(
 			{},
 			{precache: false} as RestOptions,
-			options,
+			options ?? {},
 		);
 	}
 
