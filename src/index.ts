@@ -1,6 +1,6 @@
 interface RestOptions {
 	/**
-	 * Whether to cache `text` and `json` after the response, so it can be directly retrieve,
+	 * Whether to cache `text` or `json` after the response, so it can be directly retrieve,
 	 *  e.g.
 	 *  ```js
 	 *  const {json} = await get('data')
@@ -12,10 +12,12 @@ interface RestOptions {
 	 *  typeof (await json()) === 'object' // true
 	 *  ```
 	 *
-	 *  @default false
+	 *  @default undefined
 	 */
-	precache: boolean;
+	precache: RestPreCacheType | undefined;
 }
+
+type RestPreCacheType = 'text' | 'json';
 
 export class Rest {
 	#options: RestOptions;
@@ -26,7 +28,7 @@ export class Rest {
 	) {
 		this.#options = Object.assign(
 			{},
-			{precache: false} as RestOptions,
+			{precache: undefined} as RestOptions,
 			options ?? {},
 		);
 	}
@@ -36,17 +38,17 @@ export class Rest {
 		return this.baseURL;
 	}
 
-	get(path = '/') {
-		return get(`${this.url}/${path}`, this.#options.precache);
+	get(path = '/', precache = this.#options.precache) {
+		return get(`${this.url}/${path}`, precache);
 	}
-	post(path = '/', body: any) {
-		return post(`${this.url}/${path}`, body, this.#options.precache);
+	post(path = '/', body: any, precache = this.#options.precache) {
+		return post(`${this.url}/${path}`, body, precache);
 	}
 }
 
 export async function get(
 	url: string,
-	precache = false,
+	precache: RestPreCacheType | undefined = undefined,
 ): Promise<ResponseObject> {
 	// if (!url.startsWith('http')) {
 	// 	url = `http://${url}`;
@@ -57,23 +59,25 @@ export async function get(
 	return {
 		response,
 		status: response.status,
-		text: precache
-			? await response.text()
-			: async function () {
-					return await response.text();
-				},
-		json: precache
-			? await response.json()
-			: async function () {
-					return await response.json();
-				},
+		text:
+			precache === 'text'
+				? await response.text()
+				: async function () {
+						return await response.text();
+					},
+		json:
+			precache === 'json'
+				? await response.json()
+				: async function () {
+						return await response.json();
+					},
 	};
 }
 
 export async function post(
 	url: string,
 	body: any,
-	precache = false,
+	precache: RestPreCacheType | undefined = undefined,
 ): Promise<ResponseObject> {
 	// if (!url.startsWith('http')) {
 	// 	url = `http://${url}`;
@@ -88,16 +92,18 @@ export async function post(
 	return {
 		response,
 		status: response.status,
-		text: precache
-			? await response.text()
-			: async function () {
-					return await response.text();
-				},
-		json: precache
-			? await response.json()
-			: async function () {
-					return await response.json();
-				},
+		text:
+			precache === 'text'
+				? await response.text()
+				: async function () {
+						return await response.text();
+					},
+		json:
+			precache === 'json'
+				? await response.json()
+				: async function () {
+						return await response.json();
+					},
 	};
 }
 
