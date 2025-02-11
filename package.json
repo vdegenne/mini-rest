@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/mini-rest",
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"description": "mini rest module",
 	"type": "module",
 	"main": "./lib/index.js",
@@ -36,4 +36,3 @@
 		"wireit": "^0.14.9"
 	}
 }
-
