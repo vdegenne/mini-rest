@@ -15,3 +15,12 @@ if (status === 200) {
 	// success, do something
 }
 ```
+
+### Precache
+
+```js
+const api = new Rest('localhost:xxxx/api/v1', {precache: true});
+
+const {json} = await api.get('data');
+console.log(json.something);
+```
