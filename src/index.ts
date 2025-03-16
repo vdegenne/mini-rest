@@ -44,6 +44,10 @@ export class Rest {
 	post(path = '/', body: any, precache = this.#options.precache) {
 		return post(`${this.url}/${path}`, body, precache);
 	}
+
+	delete(path = '/', precache = this.#options.precache) {
+		return del(`${this.url}/${path}`, precache);
+	}
 }
 
 export async function get(
@@ -88,6 +92,31 @@ export async function post(
 			'content-type': 'application/json',
 		},
 		body: JSON.stringify(body),
+	});
+	return {
+		response,
+		status: response.status,
+		text:
+			precache === 'text'
+				? await response.text()
+				: async function () {
+						return await response.text();
+					},
+		json:
+			precache === 'json'
+				? await response.json()
+				: async function () {
+						return await response.json();
+					},
+	};
+}
+
+export async function del(
+	url: string,
+	precache: RestPreCacheType | undefined = undefined,
+) {
+	const response = await fetch(url, {
+		method: 'DELETE',
 	});
 	return {
 		response,
