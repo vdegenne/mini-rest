@@ -1,25 +1,17 @@
 import {removeDoubleSlashes} from './utils.js';
 
 interface RestOptions {
-	/**
-	 * Whether to cache `text` or `json` after the response, so it can be directly retrieve,
-	 *  e.g.
-	 *  ```js
-	 *  const {json} = await get('data')
-	 *  typeof json === 'object' // true
-	 *  ```
-	 *  instead of,
-	 *  ```js
-	 *  const {json} = await get('data')
-	 *  typeof (await json()) === 'object' // true
-	 *  ```
-	 *
-	 *  @default undefined
-	 */
 	precache: RestPreCacheType | undefined;
 }
 
 type RestPreCacheType = 'text' | 'json';
+
+type ResponseObject = {
+	response: Response;
+	status: number;
+	text: string | (() => Promise<string>);
+	json: any | (() => Promise<any>);
+};
 
 export class Rest {
 	#options: RestOptions;
@@ -36,7 +28,6 @@ export class Rest {
 	}
 
 	get url() {
-		// TODO: better url system?
 		return this.baseURL;
 	}
 
@@ -50,22 +41,21 @@ export class Rest {
 	post(path = '/', body: any, precache = this.#options.precache) {
 		return post(this.composeUrl(path), body, precache);
 	}
-
 	delete(path = '/', precache = this.#options.precache) {
 		return del(this.composeUrl(path), precache);
 	}
 }
 
-export async function get(
-	url: string,
-	precache: RestPreCacheType | undefined = undefined,
+function ensureOk(response: Response, method: string): void {
+	if (!response.ok) {
+		throw new Error(`${method} request failed with status ${response.status}`);
+	}
+}
+
+async function buildResponseObject(
+	response: Response,
+	precache: RestPreCacheType | undefined,
 ): Promise<ResponseObject> {
-	// if (!url.startsWith('http')) {
-	// 	url = `http://${url}`;
-	// }
-	const response = await fetch(url, {
-		method: 'GET',
-	});
 	return {
 		response,
 		status: response.status,
@@ -82,6 +72,15 @@ export async function get(
 						return await response.json();
 					},
 	};
+}
+
+export async function get(
+	url: string,
+	precache: RestPreCacheType | undefined = undefined,
+): Promise<ResponseObject> {
+	const response = await fetch(url, {method: 'GET'});
+	ensureOk(response, 'GET');
+	return await buildResponseObject(response, precache);
 }
 
 export async function post(
@@ -89,62 +88,20 @@ export async function post(
 	body: any,
 	precache: RestPreCacheType | undefined = undefined,
 ): Promise<ResponseObject> {
-	// if (!url.startsWith('http')) {
-	// 	url = `http://${url}`;
-	// }
 	const response = await fetch(url, {
 		method: 'POST',
-		headers: {
-			'content-type': 'application/json',
-		},
+		headers: {'content-type': 'application/json'},
 		body: JSON.stringify(body),
 	});
-	return {
-		response,
-		status: response.status,
-		text:
-			precache === 'text'
-				? await response.text()
-				: async function () {
-						return await response.text();
-					},
-		json:
-			precache === 'json'
-				? await response.json()
-				: async function () {
-						return await response.json();
-					},
-	};
+	ensureOk(response, 'POST');
+	return await buildResponseObject(response, precache);
 }
 
 export async function del(
 	url: string,
 	precache: RestPreCacheType | undefined = undefined,
-) {
-	const response = await fetch(url, {
-		method: 'DELETE',
-	});
-	return {
-		response,
-		status: response.status,
-		text:
-			precache === 'text'
-				? await response.text()
-				: async function () {
-						return await response.text();
-					},
-		json:
-			precache === 'json'
-				? await response.json()
-				: async function () {
-						return await response.json();
-					},
-	};
+): Promise<ResponseObject> {
+	const response = await fetch(url, {method: 'DELETE'});
+	ensureOk(response, 'DELETE');
+	return await buildResponseObject(response, precache);
 }
-
-type ResponseObject = {
-	response: Response;
-	status: number;
-	text: string | (() => Promise<string>);
-	json: any | (() => Promise<any>);
-};
