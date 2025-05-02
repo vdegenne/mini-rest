@@ -1,3 +1,5 @@
+import {removeDoubleSlashes} from './utils.js';
+
 interface RestOptions {
 	/**
 	 * Whether to cache `text` or `json` after the response, so it can be directly retrieve,
@@ -38,15 +40,19 @@ export class Rest {
 		return this.baseURL;
 	}
 
+	composeUrl(path: string) {
+		return removeDoubleSlashes(`${this.baseURL}/${path}`);
+	}
+
 	get(path = '/', precache = this.#options.precache) {
-		return get(`${this.url}/${path}`, precache);
+		return get(this.composeUrl(path), precache);
 	}
 	post(path = '/', body: any, precache = this.#options.precache) {
-		return post(`${this.url}/${path}`, body, precache);
+		return post(this.composeUrl(path), body, precache);
 	}
 
 	delete(path = '/', precache = this.#options.precache) {
-		return del(`${this.url}/${path}`, precache);
+		return del(this.composeUrl(path), precache);
 	}
 }
 
