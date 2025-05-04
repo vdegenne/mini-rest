@@ -41,6 +41,9 @@ export class Rest {
 	post(path = '/', body: any, precache = this.#options.precache) {
 		return post(this.composeUrl(path), body, precache);
 	}
+	put(path = '/', body: any, precache = this.#options.precache) {
+		return put(this.composeUrl(path), body, precache);
+	}
 	delete(path = '/', precache = this.#options.precache) {
 		return del(this.composeUrl(path), precache);
 	}
@@ -94,6 +97,20 @@ export async function post(
 		body: JSON.stringify(body),
 	});
 	ensureOk(response, 'POST');
+	return await buildResponseObject(response, precache);
+}
+
+export async function put(
+	url: string,
+	body: any,
+	precache: RestPreCacheType | undefined = undefined,
+): Promise<ResponseObject> {
+	const response = await fetch(url, {
+		method: 'PUT',
+		headers: {'content-type': 'application/json'},
+		body: JSON.stringify(body),
+	});
+	ensureOk(response, 'PUT');
 	return await buildResponseObject(response, precache);
 }
 
