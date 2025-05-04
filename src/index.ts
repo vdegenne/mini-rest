@@ -8,6 +8,7 @@ type RestPreCacheType = 'text' | 'json';
 
 type ResponseObject = {
 	response: Response;
+	ok: boolean;
 	status: number;
 	text: string | (() => Promise<string>);
 	json: any | (() => Promise<any>);
@@ -62,6 +63,7 @@ async function buildResponseObject(
 	return {
 		response,
 		status: response.status,
+		ok: response.status === 200,
 		text:
 			precache === 'text'
 				? await response.text()
