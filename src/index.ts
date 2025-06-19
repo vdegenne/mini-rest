@@ -1,32 +1,71 @@
 import {removeDoubleSlashes} from './utils.js';
 
-interface RestOptions {
-	precache: RestPreCacheType | undefined;
-}
-
-type RestPreCacheType = 'text' | 'json';
-
-type ResponseObject = {
+type ResponseObject<T = any> = {
 	response: Response;
 	ok: boolean;
 	status: number;
 	text: string | (() => Promise<string>);
-	json: any | (() => Promise<any>);
+	json: T | (() => Promise<T>);
 };
 
-export class Rest {
-	#options: RestOptions;
-
-	constructor(
-		protected baseURL: string,
-		options?: Partial<RestOptions>,
-	) {
-		this.#options = Object.assign(
-			{},
-			{precache: undefined} as RestOptions,
-			options ?? {},
-		);
+function ensureOk(response: Response, method: string): void {
+	if (!response.ok) {
+		throw new Error(`${method} request failed with status ${response.status}`);
 	}
+}
+
+async function buildResponseObject<T = any>(
+	response: Response,
+): Promise<ResponseObject<T>> {
+	return {
+		response,
+		status: response.status,
+		ok: response.status === 200,
+		text: async () => await response.text(),
+		json: async () => await response.json(),
+	};
+}
+
+export async function get<T = any>(url: string): Promise<ResponseObject<T>> {
+	const response = await fetch(url, {method: 'GET'});
+	ensureOk(response, 'GET');
+	return await buildResponseObject<T>(response);
+}
+
+export async function post<T = any>(
+	url: string,
+	body: any,
+): Promise<ResponseObject<T>> {
+	const response = await fetch(url, {
+		method: 'POST',
+		headers: {'content-type': 'application/json'},
+		body: JSON.stringify(body),
+	});
+	ensureOk(response, 'POST');
+	return await buildResponseObject<T>(response);
+}
+
+export async function put<T = any>(
+	url: string,
+	body: any,
+): Promise<ResponseObject<T>> {
+	const response = await fetch(url, {
+		method: 'PUT',
+		headers: {'content-type': 'application/json'},
+		body: JSON.stringify(body),
+	});
+	ensureOk(response, 'PUT');
+	return await buildResponseObject<T>(response);
+}
+
+export async function del<T = any>(url: string): Promise<ResponseObject<T>> {
+	const response = await fetch(url, {method: 'DELETE'});
+	ensureOk(response, 'DELETE');
+	return await buildResponseObject<T>(response);
+}
+
+export class Rest<TMap extends Record<string, any>> {
+	constructor(protected baseURL: string) {}
 
 	get url() {
 		return this.baseURL;
@@ -36,91 +75,25 @@ export class Rest {
 		return removeDoubleSlashes(`${this.baseURL}/${path}`);
 	}
 
-	get(path = '/', precache = this.#options.precache) {
-		return get(this.composeUrl(path), precache);
+	get<K extends keyof TMap>(path: K): Promise<ResponseObject<TMap[K]>> {
+		return get<TMap[K]>(this.composeUrl(path as string));
 	}
-	post(path = '/', body: any, precache = this.#options.precache) {
-		return post(this.composeUrl(path), body, precache);
+
+	post<K extends keyof TMap>(
+		path: K,
+		body: any,
+	): Promise<ResponseObject<TMap[K]>> {
+		return post<TMap[K]>(this.composeUrl(path as string), body);
 	}
-	put(path = '/', body: any, precache = this.#options.precache) {
-		return put(this.composeUrl(path), body, precache);
+
+	put<K extends keyof TMap>(
+		path: K,
+		body: any,
+	): Promise<ResponseObject<TMap[K]>> {
+		return put<TMap[K]>(this.composeUrl(path as string), body);
 	}
-	delete(path = '/', precache = this.#options.precache) {
-		return del(this.composeUrl(path), precache);
+
+	delete<K extends keyof TMap>(path: K): Promise<ResponseObject<TMap[K]>> {
+		return del<TMap[K]>(this.composeUrl(path as string));
 	}
-}
-
-function ensureOk(response: Response, method: string): void {
-	if (!response.ok) {
-		throw new Error(`${method} request failed with status ${response.status}`);
-	}
-}
-
-async function buildResponseObject(
-	response: Response,
-	precache: RestPreCacheType | undefined,
-): Promise<ResponseObject> {
-	return {
-		response,
-		status: response.status,
-		ok: response.status === 200,
-		text:
-			precache === 'text'
-				? await response.text()
-				: async function () {
-						return await response.text();
-					},
-		json:
-			precache === 'json'
-				? await response.json()
-				: async function () {
-						return await response.json();
-					},
-	};
-}
-
-export async function get(
-	url: string,
-	precache: RestPreCacheType | undefined = undefined,
-): Promise<ResponseObject> {
-	const response = await fetch(url, {method: 'GET'});
-	ensureOk(response, 'GET');
-	return await buildResponseObject(response, precache);
-}
-
-export async function post(
-	url: string,
-	body: any,
-	precache: RestPreCacheType | undefined = undefined,
-): Promise<ResponseObject> {
-	const response = await fetch(url, {
-		method: 'POST',
-		headers: {'content-type': 'application/json'},
-		body: JSON.stringify(body),
-	});
-	ensureOk(response, 'POST');
-	return await buildResponseObject(response, precache);
-}
-
-export async function put(
-	url: string,
-	body: any,
-	precache: RestPreCacheType | undefined = undefined,
-): Promise<ResponseObject> {
-	const response = await fetch(url, {
-		method: 'PUT',
-		headers: {'content-type': 'application/json'},
-		body: JSON.stringify(body),
-	});
-	ensureOk(response, 'PUT');
-	return await buildResponseObject(response, precache);
-}
-
-export async function del(
-	url: string,
-	precache: RestPreCacheType | undefined = undefined,
-): Promise<ResponseObject> {
-	const response = await fetch(url, {method: 'DELETE'});
-	ensureOk(response, 'DELETE');
-	return await buildResponseObject(response, precache);
 }
