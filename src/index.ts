@@ -4,8 +4,8 @@ type ResponseObject<T = any> = {
 	response: Response;
 	ok: boolean;
 	status: number;
-	text: string | (() => Promise<string>);
-	json: T | (() => Promise<T>);
+	text: () => Promise<string>;
+	json: () => Promise<T>;
 };
 
 function ensureOk(response: Response, method: string): void {
