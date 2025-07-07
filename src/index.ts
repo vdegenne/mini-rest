@@ -9,9 +9,9 @@ type ResponseObject<T = any> = {
 };
 
 function ensureOk(response: Response, method: string): void {
-	if (!response.ok) {
-		throw new Error(`${method} request failed with status ${response.status}`);
-	}
+	// if (!response.ok) {
+	// 	throw new Error(`${method} request failed with status ${response.status}`);
+	// }
 }
 
 async function buildResponseObject<T = any>(
