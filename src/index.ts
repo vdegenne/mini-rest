@@ -21,8 +21,8 @@ async function buildResponseObject<T = any>(
 		response,
 		status: response.status,
 		ok: response.status === 200,
-		text: async () => await response.text(),
-		json: async () => await response.json(),
+		text: () => response.text(),
+		json: () => response.json(),
 	};
 }
 
