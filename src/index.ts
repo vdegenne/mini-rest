@@ -64,7 +64,12 @@ export async function del<T = any>(url: string): Promise<ResponseObject<T>> {
 	return await buildResponseObject<T>(response);
 }
 
-export class Rest<TMap extends Record<string, any>> {
+export interface Endpoint<Req, Res> {
+	request: Req;
+	response: Res;
+}
+
+export class Rest<TMap extends Record<string, Endpoint<any, any>>> {
 	constructor(protected baseURL: string) {}
 
 	get url() {
@@ -75,25 +80,29 @@ export class Rest<TMap extends Record<string, any>> {
 		return removeDoubleSlashes(`${this.baseURL}/${path}`);
 	}
 
-	get<K extends keyof TMap>(path: K): Promise<ResponseObject<TMap[K]>> {
-		return get<TMap[K]>(this.composeUrl(path as string));
+	get<K extends keyof TMap>(
+		path: K,
+	): Promise<ResponseObject<TMap[K]['response']>> {
+		return get<TMap[K]['response']>(this.composeUrl(path as string));
 	}
 
 	post<K extends keyof TMap>(
 		path: K,
-		body: any,
-	): Promise<ResponseObject<TMap[K]>> {
-		return post<TMap[K]>(this.composeUrl(path as string), body);
+		body: TMap[K]['request'],
+	): Promise<ResponseObject<TMap[K]['response']>> {
+		return post<TMap[K]['response']>(this.composeUrl(path as string), body);
 	}
 
 	put<K extends keyof TMap>(
 		path: K,
-		body: any,
-	): Promise<ResponseObject<TMap[K]>> {
-		return put<TMap[K]>(this.composeUrl(path as string), body);
+		body: TMap[K]['request'],
+	): Promise<ResponseObject<TMap[K]['response']>> {
+		return put<TMap[K]['response']>(this.composeUrl(path as string), body);
 	}
 
-	delete<K extends keyof TMap>(path: K): Promise<ResponseObject<TMap[K]>> {
-		return del<TMap[K]>(this.composeUrl(path as string));
+	delete<K extends keyof TMap>(
+		path: K,
+	): Promise<ResponseObject<TMap[K]['response']>> {
+		return del<TMap[K]['response']>(this.composeUrl(path as string));
 	}
 }
