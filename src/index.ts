@@ -64,45 +64,53 @@ export async function del<T = any>(url: string): Promise<ResponseObject<T>> {
 	return await buildResponseObject<T>(response);
 }
 
-export interface Endpoint<Req, Res> {
-	request: Req;
-	response: Res;
-}
+export type Endpoint<Req, Res> = {request: Req; response: Res};
 
-export class Rest<TMap extends Record<string, Endpoint<any, any>>> {
+export class Rest<
+	TMap extends {
+		get?: Record<string, Endpoint<any, any>>;
+		post?: Record<string, Endpoint<any, any>>;
+		put?: Record<string, Endpoint<any, any>>;
+		delete?: Record<string, Endpoint<any, any>>;
+	},
+> {
 	constructor(protected baseURL: string) {}
-
-	get url() {
-		return this.baseURL;
-	}
 
 	composeUrl(path: string) {
 		return removeDoubleSlashes(`${this.baseURL}/${path}`);
 	}
 
-	get<K extends keyof TMap>(
+	get<K extends keyof NonNullable<TMap['get']> & string>(
 		path: K,
-	): Promise<ResponseObject<TMap[K]['response']>> {
-		return get<TMap[K]['response']>(this.composeUrl(path as string));
+	): Promise<ResponseObject<NonNullable<TMap['get']>[K]['response']>> {
+		return get<NonNullable<TMap['get']>[K]['response']>(this.composeUrl(path));
 	}
 
-	post<K extends keyof TMap>(
+	post<K extends keyof NonNullable<TMap['post']> & string>(
 		path: K,
-		body: TMap[K]['request'],
-	): Promise<ResponseObject<TMap[K]['response']>> {
-		return post<TMap[K]['response']>(this.composeUrl(path as string), body);
+		body: NonNullable<TMap['post']>[K]['request'],
+	): Promise<ResponseObject<NonNullable<TMap['post']>[K]['response']>> {
+		return post<NonNullable<TMap['post']>[K]['response']>(
+			this.composeUrl(path),
+			body,
+		);
 	}
 
-	put<K extends keyof TMap>(
+	put<K extends keyof NonNullable<TMap['put']> & string>(
 		path: K,
-		body: TMap[K]['request'],
-	): Promise<ResponseObject<TMap[K]['response']>> {
-		return put<TMap[K]['response']>(this.composeUrl(path as string), body);
+		body: NonNullable<TMap['put']>[K]['request'],
+	): Promise<ResponseObject<NonNullable<TMap['put']>[K]['response']>> {
+		return put<NonNullable<TMap['put']>[K]['response']>(
+			this.composeUrl(path),
+			body,
+		);
 	}
 
-	delete<K extends keyof TMap>(
+	delete<K extends keyof NonNullable<TMap['delete']> & string>(
 		path: K,
-	): Promise<ResponseObject<TMap[K]['response']>> {
-		return del<TMap[K]['response']>(this.composeUrl(path as string));
+	): Promise<ResponseObject<NonNullable<TMap['delete']>[K]['response']>> {
+		return del<NonNullable<TMap['delete']>[K]['response']>(
+			this.composeUrl(path),
+		);
 	}
 }
