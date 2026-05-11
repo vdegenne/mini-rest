@@ -88,7 +88,7 @@ export class Rest<
 
 	post<K extends keyof NonNullable<TMap['post']> & string>(
 		path: K,
-		body: NonNullable<TMap['post']>[K]['request'],
+		body?: NonNullable<TMap['post']>[K]['request'],
 	): Promise<ResponseObject<NonNullable<TMap['post']>[K]['response']>> {
 		return post<NonNullable<TMap['post']>[K]['response']>(
 			this.composeUrl(path),
@@ -98,7 +98,7 @@ export class Rest<
 
 	put<K extends keyof NonNullable<TMap['put']> & string>(
 		path: K,
-		body: NonNullable<TMap['put']>[K]['request'],
+		body?: NonNullable<TMap['put']>[K]['request'],
 	): Promise<ResponseObject<NonNullable<TMap['put']>[K]['response']>> {
 		return put<NonNullable<TMap['put']>[K]['response']>(
 			this.composeUrl(path),
