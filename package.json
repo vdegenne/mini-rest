@@ -1,6 +1,6 @@
 {
 	"name": "@vdegenne/mini-rest",
-	"version": "0.3.4",
+	"version": "0.3.5",
 	"description": "mini rest module",
 	"type": "module",
 	"exports": {
@@ -30,6 +30,6 @@
 	],
 	"devDependencies": {
 		"typescript": "^6.0.3",
-		"wireit": "^0.14.12"
+		"wireit": "^0.14.13"
 	}
 }
