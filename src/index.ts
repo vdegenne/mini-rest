@@ -6,6 +6,7 @@ type ResponseObject<T = any> = {
 	status: number;
 	text: () => Promise<string>;
 	json: () => Promise<T>;
+	blob: () => Promise<Blob>;
 };
 
 function ensureOk(response: Response, method: string): void {
@@ -23,6 +24,7 @@ async function buildResponseObject<T = any>(
 		ok: response.status === 200,
 		text: () => response.text(),
 		json: () => response.json(),
+		blob: () => response.blob(),
 	};
 }
 
